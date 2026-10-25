@@ -1,6 +1,6 @@
 # CSIRO Image2Biomass Prediction
 
-My final solution for the Kaggle CSIRO Image2Biomass Prediction competition.
+My final solution for the [Kaggle CSIRO Image2Biomass Prediction competition](https://www.kaggle.com/competitions/csiro-biomass).
 
 **TL;DR.** A frozen DINOv3 ViT-7B extracts image features at three scales and three layer taps. Per-view Ridge models predict the biomass targets, and a second Ridge layer stacks their out-of-fold predictions. The final baseline blends raw-target and log-target pipelines, averages 2-, 3-, and 5-fold configurations, and applies biomass-consistency post-processing.
 

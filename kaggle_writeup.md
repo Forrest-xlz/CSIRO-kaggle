@@ -1,5 +1,3 @@
-# CSIRO Image2Biomass Prediction: Frozen DINOv3 7B with Ridge Stacking
-
 Thanks to the competition organizers for hosting this challenging competition, and to @zjayzz for the [public notebook](https://www.kaggle.com/code/zjayzz/1-6-vesion2), which provided helpful insights and a solid starting point for my solution.
 
 This is the first time I have achieved such a strong result on Kaggle. I learned a lot from this competition, and below I share my approach, the experiments behind it, and the lessons I took away.
@@ -68,7 +66,7 @@ I train separate stacks on **raw targets** and **log1p-transformed targets**, th
 - **Pooling and dimensionality:** signed-GeM uses p = 3. Concatenating the four pooling outputs gives a 4C-dimensional embedding per view, where C is the token feature dimension. PCA retains up to 355 components.
 - **Ridge settings:** the first-level models use α = 5, and the second-level models use α = 1. All views within a stack use the same shuffled KFold splits with seed 42.
 - **Feature preprocessing:** in the supplied notebook, RobustScaler is fitted on combined training and test features, while PCA is fitted on the full training features. Both are fitted once per view before the KFold loop.
-- **Data filtering:** the baseline notebook excludes image ID ID230058600 before feature extraction.
+- **Data filtering:** the baseline notebook excludes image `ID230058600` before feature extraction.
 
 ## Key Points
 
@@ -121,7 +119,7 @@ These results made feature extraction and aggregation the most promising areas f
 
 The largest performance drops in the reported ablations came from simplifying the pooling strategy and removing intermediate-layer features. I would therefore continue testing alternative layer combinations, pooling strategies, and small attention-based aggregation modules.
 
-## EDA-Guided Model Diagnostics
+## Learning from EDA
 
 During EDA, I observed that sampling dates were unevenly distributed across States, making geographic and seasonal effects difficult to separate in the available data. Target distributions also differed substantially across States: in the examined training subset, NSW samples had zero Dry_Clover_g, while WA samples had zero Dry_Dead_g.
 
@@ -129,19 +127,11 @@ These observations were not incorporated into the final solution, but they sugge
 ![](https://www.googleapis.com/download/storage/v1/b/kaggle-user-content/o/inbox%2F26182217%2F6c1a8200e24651b747eeccee3c1be82e%2Fstate1.png?generation=1792944132609983&alt=media)
 ![](https://www.googleapis.com/download/storage/v1/b/kaggle-user-content/o/inbox%2F26182217%2Fa28fb5f16043ad12453113d9698e21e9%2Fstate2.png?generation=1792944143471873&alt=media)
 
-The State-dependent patterns provide a way to inspect model behavior at a finer level. I would first measure subgroup errors and predicted biomass on the observed zero-biomass cases. If systematic errors appear, I would investigate whether targeted sampling, loss weighting, or softly weighted priors can address them.
-
-Since State is unavailable at test time, a State-specific correction would need an image-based estimate of that context. Any such correction should account for uncertainty rather than automatically forcing predictions to zero based on training-set patterns.
+EDA revealed clear relationships between State, sampling date, and biomass targets. These observations could help us check whether the model has learned important patterns in the data. Where it falls short, EDA-derived knowledge may provide useful guidance for improving predictions.
 
 ## Learning from Training-Only Metadata
 
-Another direction is to use metadata as **auxiliary training targets**. A shared visual representation could support the main biomass regression task alongside auxiliary tasks such as species prediction, NDVI regression, or height regression. State or seasonal-context prediction could also be tested, while checking whether these tasks encourage useful visual learning or reliance on sampling-specific shortcuts.
-
-The motivation follows the shared-representation approach of Caruana’s work on multitask learning: related training signals may help a model learn features that support the main task. DeepMind’s Gato provides a broader example of training shared parameters across diverse tasks, although it does not establish that these particular auxiliary tasks would improve biomass prediction.
-
-This would require a change to the current architecture. Because DINOv3 is frozen, auxiliary losses cannot update its representation directly. I would need to train a **shared adapter on top of the frozen features**, or fine-tune part of the backbone, with biomass and auxiliary heads sharing the trainable representation. At inference time, the model would still require only images; the auxiliary labels would be used only during training.
-
-The value of this approach would need to be established by comparing biomass performance with and without auxiliary supervision under the same evaluation protocol. These ideas remain future directions rather than demonstrated improvements to the final solution.
+The training data include additional information such as species, NDVI, and height. Although these fields are unavailable at test time, they could still provide useful supervision during training—for example, through auxiliary tasks in a multi-task learning setup. This may help the model learn better visual features and improve generalization when labeled images are limited.
 
 ---
 
