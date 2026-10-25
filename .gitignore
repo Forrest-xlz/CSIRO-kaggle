@@ -1,0 +1,42 @@
+# Local competition datasets
+/data/
+/ass_data/
+
+# Training artifacts and caches
+/AutogluonModels/
+trained_models/
+checkpoints/
+outputs/
+runs/
+wandb/
+.cache/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+*.safetensors
+*.pt
+*.pth
+*.ckpt
+*.bin
+*.pkl
+*.pickle
+*.npy
+*.npz
+*.parquet
+*.log
+
+# Local environments and credentials
+.venv/
+venv/
+env/
+.env
+.env.*
+!.env.example
+
+# Generated archives and OS files
+*.zip
+*.7z
+*.tar
+*.tar.gz
+.DS_Store
+Thumbs.db

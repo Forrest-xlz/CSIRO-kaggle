@@ -1,0 +1,21 @@
+# Core data science and notebook tools
+numpy
+pandas
+scikit-learn
+jupyterlab
+ipykernel
+
+# Frozen DINOv3 feature extraction
+torch
+torchvision
+timm
+safetensors
+Pillow
+tqdm
+
+# EDA and plotting
+matplotlib
+seaborn
+
+# AutoGluon tabular EDA
+autogluon
